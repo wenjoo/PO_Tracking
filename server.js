@@ -6,7 +6,11 @@ const db = require("./db");
 
 const app = express();
 app.use(express.json());
+
+// Serve UI
 app.use(express.static(path.join(__dirname, "public")));
+
+// Serve uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const nowISO = () => new Date().toISOString();
@@ -15,6 +19,7 @@ const nowISO = () => new Date().toISOString();
 const uploadDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
+// Safe filename storage
 const storage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, uploadDir),
   filename: (_, file, cb) => {
@@ -37,20 +42,21 @@ const DEFAULT_STEPS = [
   { no: 9, title: "Make payment", desc: "Admin makes payment. Follow up if needed, upload payment slip or link." }
 ];
 
-// ---------- API ----------
+// ---- API ----
 
 // Create month folder
 app.post("/api/months", (req, res) => {
   const { month_key, label } = req.body;
+
   if (!month_key || !/^\d{4}-\d{2}$/.test(month_key)) {
-    return res.status(400).json({ error: "month_key must be like YYYY-MM (e.g. 2026-02)" });
+    return res.status(400).json({ error: "month_key must be YYYY-MM (e.g. 2026-02)" });
   }
-  const created_at = nowISO();
+
   try {
     const info = db.prepare(`
       INSERT INTO months (month_key, label, created_at)
       VALUES (?, ?, ?)
-    `).run(month_key, label || month_key, created_at);
+    `).run(month_key, label || month_key, nowISO());
 
     res.json({ id: info.lastInsertRowid });
   } catch (e) {
@@ -70,7 +76,6 @@ app.get("/api/tree", (_req, res) => {
 
   const map = new Map();
   for (const m of months) map.set(m.id, { ...m, pos: [] });
-
   for (const p of pos) {
     const bucket = map.get(p.month_id);
     if (bucket) bucket.pos.push(p);
@@ -82,6 +87,7 @@ app.get("/api/tree", (_req, res) => {
 // Create PO folder under a month + auto-create steps
 app.post("/api/po", (req, res) => {
   const { month_id, folder_name, capex_opex, it_ref_no, title } = req.body;
+
   if (!month_id || !folder_name || !capex_opex || !it_ref_no || !title) {
     return res.status(400).json({ error: "month_id, folder_name, capex_opex, it_ref_no, title required" });
   }
@@ -100,13 +106,13 @@ app.post("/api/po", (req, res) => {
 
     const poId = info.lastInsertRowid;
 
-    const insStep = db.prepare(`
+    const ins = db.prepare(`
       INSERT INTO po_steps (po_id, step_no, step_title, step_desc, is_done, updated_at)
       VALUES (?, ?, ?, ?, 0, ?)
     `);
 
     for (const s of DEFAULT_STEPS) {
-      insStep.run(poId, s.no, s.title, s.desc, nowISO());
+      ins.run(poId, s.no, s.title, s.desc, nowISO());
     }
 
     return poId;
@@ -127,14 +133,15 @@ app.get("/api/po/:id", (req, res) => {
   if (!po) return res.status(404).json({ error: "Not found" });
 
   const steps = db.prepare(`
-    SELECT * FROM po_steps WHERE po_id = ?
+    SELECT * FROM po_steps
+    WHERE po_id = ?
     ORDER BY step_no ASC
   `).all(id);
 
   res.json({ po, steps });
 });
 
-// Update step (done + links)
+// Update step (done + optional links)
 app.patch("/api/step/:id", (req, res) => {
   const id = Number(req.params.id);
   const step = db.prepare(`SELECT * FROM po_steps WHERE id = ?`).get(id);
@@ -157,7 +164,6 @@ app.patch("/api/step/:id", (req, res) => {
     id
   );
 
-  // touch PO updated_at
   db.prepare(`UPDATE po_folders SET updated_at = ? WHERE id = ?`).run(nowISO(), step.po_id);
 
   res.json({ ok: true });
