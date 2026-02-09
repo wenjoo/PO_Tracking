@@ -30,9 +30,11 @@ CREATE TABLE IF NOT EXISTS po_steps (
   step_desc TEXT NOT NULL,
   is_done INTEGER NOT NULL DEFAULT 0,      -- 0/1
 
+  -- Optional extra links user can fill
   link1 TEXT,
   link2 TEXT,
 
+  -- Optional upload
   file_name TEXT,
   file_path TEXT,
   uploaded_at TEXT,
