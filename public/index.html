@@ -6,14 +6,19 @@
   <title>PO Tracking</title>
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 16px; }
-    input, button, select { padding: 8px; font-size: 14px; }
+    input, button { padding: 8px; font-size: 14px; }
     button { cursor:pointer; }
 
     .top { display:flex; gap:10px; align-items:center; }
     #q { flex:1; }
 
-    details summary { list-style:none; cursor:pointer; user-select:none; padding:10px; border:1px solid #ddd; border-radius:10px; background:#fafafa; }
+    details summary {
+      list-style:none; cursor:pointer; user-select:none;
+      padding:10px; border:1px solid #ddd; border-radius:10px;
+      background:#fafafa;
+    }
     details summary::-webkit-details-marker { display:none; }
+
     details.month > summary::before { content:"📁 "; }
     details.month[open] > summary::before { content:"📂 "; }
     details.po > summary::before { content:"🗂️ "; }
@@ -23,18 +28,26 @@
     .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
     .steps { margin-top:10px; display:flex; flex-direction:column; gap:10px; }
+
     .step { border:1px solid #e5e5e5; border-radius:10px; padding:10px; background:#fff; }
-    .step-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .step.done { background: #e9fbe9; border-color: #7ad67a; }
+    .step.done .step-title { color:#176b17; }
+
+    .step-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
     .step-title { font-weight:600; }
+
     .muted { color:#666; font-size: 13px; margin-top:6px; }
-    .links { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+
+    .links { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; align-items:center; }
     .links input { flex:1; min-width: 220px; }
+
     .fileline { margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
     a { color: #0b57d0; text-decoration:none; }
     a:hover { text-decoration:underline; }
 
     .pill { border:1px solid #ddd; border-radius:999px; padding:2px 8px; font-size:12px; color:#444; }
-    .done { border-color:#9ad; }
+    .donepill { border-color:#7ad67a; background:#e9fbe9; }
   </style>
 </head>
 <body>
