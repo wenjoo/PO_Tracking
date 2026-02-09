@@ -16,6 +16,46 @@ function matchesSearch(text, q) {
   return (text || "").toLowerCase().includes(q.toLowerCase());
 }
 
+/* ============================
+   QUICK LINKS (HINTS)
+   Edit these once with real URLs
+============================ */
+const QUICK_LINKS = {
+  NOTION: "https://your-notion-link-here",
+  MASTERLIST: "https://your-masterlist-link-here",
+  SHAREPOINT: "https://your-sharepoint-link-here"
+};
+
+// Which steps should show hint links
+// You can add more steps here anytime.
+const STEP_HINTS = {
+  5: [
+    { label: "SharePoint", url: QUICK_LINKS.SHAREPOINT },
+    { label: "Masterlist", url: QUICK_LINKS.MASTERLIST },
+    { label: "Notion", url: QUICK_LINKS.NOTION }
+  ],
+  8: [
+    { label: "SharePoint", url: QUICK_LINKS.SHAREPOINT },
+    { label: "Masterlist", url: QUICK_LINKS.MASTERLIST },
+    { label: "Notion", url: QUICK_LINKS.NOTION }
+  ]
+};
+
+function renderHintLinks(stepNo) {
+  const hints = STEP_HINTS[stepNo] || [];
+
+  // hide if not configured (still placeholder)
+  const usable = hints.filter(h => h.url && !h.url.includes("your-"));
+  if (!usable.length) return "";
+
+  return `
+    <div class="links">
+      <span class="pill">Quick links</span>
+      ${usable.map(h => `<a class="pill" href="${h.url}" target="_blank" rel="noreferrer">${h.label}</a>`).join("")}
+    </div>
+  `;
+}
+
 async function loadTree() {
   const q = document.querySelector("#q").value.trim();
   const tree = await api("/api/tree");
@@ -23,7 +63,6 @@ async function loadTree() {
   root.innerHTML = "";
 
   for (const m of tree) {
-    // Filter month by search (if any PO matches)
     const filteredPOs = m.pos.filter(p => {
       const hay = `${p.folder_name} ${p.it_ref_no} ${p.title} ${p.capex_opex}`.trim();
       return matchesSearch(hay, q) || matchesSearch(m.label, q) || matchesSearch(m.month_key, q);
@@ -37,7 +76,8 @@ async function loadTree() {
     monthDetails.className = "month";
     monthDetails.innerHTML = `
       <summary>
-        <b>${m.label}</b> <span class="pill">${m.month_key}</span>
+        <b>${m.label}</b>
+        <span class="pill">${m.month_key}</span>
         <span class="pill">${filteredPOs.length} PO</span>
       </summary>
     `;
@@ -48,7 +88,6 @@ async function loadTree() {
     const addRow = el(`
       <div class="row">
         <button data-addpo>+ PO</button>
-        <span class="muted">Create a PO folder inside this month</span>
       </div>
     `);
     monthBox.appendChild(addRow);
@@ -69,8 +108,7 @@ async function loadTree() {
 
       const poBox = document.createElement("div");
       poBox.className = "box";
-      poBox.innerHTML = `<div class="muted">Loading steps…</div>`;
-
+      poBox.innerHTML = `<div class="muted">Loading…</div>`;
       poDetails.appendChild(poBox);
 
       poDetails.addEventListener("toggle", async () => {
@@ -88,7 +126,7 @@ async function loadTree() {
 
     // Add PO handler
     addRow.querySelector("[data-addpo]").onclick = async () => {
-      const folder_name = prompt("PO Folder Name (example: 2026-02-IT-001_Capex_Hello World)");
+      const folder_name = prompt("PO Folder Name\nExample: 2026-02-IT-001_Capex_Hello World");
       if (!folder_name) return;
 
       const cap = prompt("CAPEX or OPEX? (type CAPEX / OPEX)", "CAPEX");
@@ -123,14 +161,17 @@ function renderStepsHTML(steps) {
   return `
     <div class="steps">
       ${steps.map(s => `
-        <div class="step" data-step-id="${s.id}">
+        <div class="step ${s.is_done ? "done" : ""}" data-step-id="${s.id}">
           <div class="step-head">
-            <div>
-              <div class="step-title">${s.step_no}. ${s.step_title}
-                ${s.is_done ? `<span class="pill done">Done</span>` : ``}
+            <div style="flex:1;">
+              <div class="step-title">
+                ${s.step_no}. ${s.step_title}
+                ${s.is_done ? `<span class="pill donepill">Done</span>` : ``}
               </div>
               <div class="muted">${s.step_desc}</div>
+              ${renderHintLinks(s.step_no)}
             </div>
+
             <label class="pill">
               <input type="checkbox" data-done ${s.is_done ? "checked" : ""} />
               Done
@@ -138,15 +179,19 @@ function renderStepsHTML(steps) {
           </div>
 
           <div class="links">
-            <input data-link1 placeholder="Link 1" value="${s.link1 || ""}" />
-            <input data-link2 placeholder="Link 2" value="${s.link2 || ""}" />
+            <input data-link1 placeholder="Extra Link 1 (optional)" value="${s.link1 || ""}" />
+            <input data-link2 placeholder="Extra Link 2 (optional)" value="${s.link2 || ""}" />
             <button data-save>Save</button>
           </div>
 
           <div class="fileline">
             <input type="file" data-file />
             <button data-upload>Upload</button>
-            ${s.file_path ? `<a href="${s.file_path}" target="_blank">Open file</a>` : `<span class="muted">No file</span>`}
+            ${
+              s.file_path
+                ? `<a href="${s.file_path}" target="_blank" rel="noreferrer">Open file</a>`
+                : `<span class="muted">No file</span>`
+            }
           </div>
         </div>
       `).join("")}
@@ -191,10 +236,10 @@ function wireSteps(container, steps) {
 }
 
 document.querySelector("#newMonthBtn").onclick = async () => {
-  const month_key = prompt("Month key (YYYY-MM) e.g. 2026-02");
+  const month_key = prompt("Month key (YYYY-MM)\nExample: 2026-02");
   if (!month_key) return;
 
-  const label = prompt("Label (example: February 2026)", month_key) || month_key;
+  const label = prompt("Label\nExample: February 2026", month_key) || month_key;
 
   await api("/api/months", {
     method: "POST",
