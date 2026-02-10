@@ -14,40 +14,155 @@
 
     details summary {
       list-style:none; cursor:pointer; user-select:none;
-      padding:10px; border:1px solid #ddd; border-radius:10px;
+      padding:10px; border:1px solid #ddd; border-radius:12px;
       background:#fafafa;
     }
     details summary::-webkit-details-marker { display:none; }
 
     details.month > summary::before { content:"📁 "; }
     details.month[open] > summary::before { content:"📂 "; }
-    details.po > summary::before { content:"🗂️ "; }
     details.po[open] > summary::before { content:"🗃️ "; }
 
-    .box { border:1px solid #ddd; border-radius:10px; padding:10px; margin-top:10px; }
+    .box { border:1px solid #ddd; border-radius:12px; padding:10px; margin-top:10px; }
     .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
     .steps { margin-top:10px; display:flex; flex-direction:column; gap:10px; }
-
-    .step { border:1px solid #e5e5e5; border-radius:10px; padding:10px; background:#fff; }
+    .step { border:1px solid #e5e5e5; border-radius:12px; padding:10px; background:#fff; }
     .step.done { background: #e9fbe9; border-color: #7ad67a; }
     .step.done .step-title { color:#176b17; }
+    .step.overdue { background: #ffe9e9; border-color: #ff6b6b; }
+    .step.overdue .step-title { color:#a40000; }
+
+    details.po.all-done > summary { border-color:#7ad67a; background:#e9fbe9; }
 
     .step-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
     .step-title { font-weight:600; }
 
     .muted { color:#666; font-size: 13px; margin-top:6px; }
-
     .links { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; align-items:center; }
-    .links input { flex:1; min-width: 220px; }
-
     .fileline { margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .filelist { margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+    .fileitem { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .fileitem a { max-width: 520px; display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-    a { color: #0b57d0; text-decoration:none; }
+    a { color:#0b57d0; text-decoration:none; }
     a:hover { text-decoration:underline; }
 
-    .pill { border:1px solid #ddd; border-radius:999px; padding:2px 8px; font-size:12px; color:#444; }
+    .pill { border:1px solid #ddd; border-radius:999px; padding:2px 8px; font-size:12px; color:#444; background:#fff; }
     .donepill { border-color:#7ad67a; background:#e9fbe9; }
+    .overduepill { border-color:#ff6b6b; background:#ffe9e9; color:#a40000; }
+
+    /* Right side group */
+    .po-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Prettier checkbox area (LEFT aligned) */
+    .checks-left{
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .checkrow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size: 13px;
+      color:#222;
+      padding: 8px 10px;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      background: #fafafa;
+      width: 100%;
+      box-sizing: border-box;
+      max-width: 520px;
+    }
+    .checkrow input[type="checkbox"]{
+      width: 16px;
+      height: 16px;
+      accent-color: #0b57d0;
+    }
+
+    /* ✅ Modern icon buttons */
+    .summary-actions{
+      margin-left:auto;
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .iconbtn{
+      width: 34px;
+      height: 34px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid #ddd;
+      border-radius: 12px;
+      background:#fff;
+      padding:0;
+    }
+    .iconbtn:hover{ background:#f3f3f3; }
+    .iconbtn svg{ width:18px; height:18px; display:block; }
+
+    /* file remove icon */
+    .file-remove{
+      margin-left: 2px;
+    }
+
+    /* Login + Settings UI */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+      display:flex; align-items:center; justify-content:center;
+      z-index: 9999;
+    }
+    .card {
+      background:#fff; border:1px solid #ddd; border-radius:12px;
+      padding:14px; width: min(520px, 92vw);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    .card h3 { margin: 0 0 10px 0; }
+    .formrow { display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .formrow input { flex:1; }
+    .right { margin-left:auto; }
+
+    .pwwrap{ position: relative; flex: 1; min-width: 0; }
+    .pwwrap input{ width: 100%; box-sizing: border-box; padding-right: 44px; }
+    .eye{
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background: #fff;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    #settingsBtn {
+      position: fixed; left: 14px; bottom: 14px;
+      border:1px solid #ddd; border-radius:999px;
+      padding:10px 12px; background:#fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      display:none;
+    }
+
+    .settingsWrap { display:flex; gap:10px; }
+    .side { width: 160px; border-right:1px solid #eee; padding-right:10px; }
+    .side .tab { display:block; padding:8px 10px; border-radius:10px; cursor:pointer; user-select:none; }
+    .side .tab.active { background:#f3f6ff; border:1px solid #dbe6ff; }
+    .main { flex: 1; }
+    .userRow { display:flex; gap:10px; align-items:center; margin-top:8px; }
+    .userRow input { flex:1; }
+    .small { font-size:12px; color:#666; }
   </style>
 </head>
 <body>
@@ -58,6 +173,83 @@
   </div>
 
   <div id="tree" style="margin-top:12px;"></div>
+
+  <!-- Admin Settings Button -->
+  <button id="settingsBtn" title="Settings">⚙️</button>
+
+  <!-- LOGIN MODAL -->
+  <div id="loginOverlay" class="overlay" style="display:none;">
+    <div class="card">
+      <h3>Sign in</h3>
+      <div class="muted">Enter your username and password.</div>
+
+      <div class="formrow">
+        <input id="loginUser" placeholder="Username" autocomplete="username" />
+      </div>
+
+      <div class="formrow">
+        <div class="pwwrap">
+          <input id="loginPw" type="password" placeholder="Password" autocomplete="current-password" />
+          <span class="eye" data-eye="loginPw">👁</span>
+        </div>
+      </div>
+
+      <div class="formrow">
+        <button id="loginBtn" class="right">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsOverlay" class="overlay" style="display:none;">
+    <div class="card">
+      <div class="formrow" style="margin-top:0;">
+        <h3 style="margin:0;">Settings</h3>
+        <button id="logoutBtn" class="right" style="margin-right:8px;">Logout</button>
+        <button id="closeSettings">Close</button>
+      </div>
+
+      <div class="settingsWrap">
+        <div class="side">
+          <span class="tab active" id="tabUserAccount">User Account</span>
+        </div>
+
+        <div class="main">
+          <div id="userAccountPanel">
+            <div class="muted">Create new user or change username/password.</div>
+
+            <div class="userRow">
+              <input id="newUsername" placeholder="New username" />
+            </div>
+
+            <div class="userRow">
+              <div class="pwwrap">
+                <input id="newPassword" type="password" placeholder="New password" />
+                <span class="eye" data-eye="newPassword">👁</span>
+              </div>
+            </div>
+
+            <div class="userRow">
+              <div class="pwwrap">
+                <input id="newPassword2" type="password" placeholder="Confirm password" />
+                <span class="eye" data-eye="newPassword2">👁</span>
+              </div>
+            </div>
+
+            <div class="userRow">
+              <label class="small"><input type="checkbox" id="newIsAdmin" /> Admin</label>
+              <button id="createUserBtn" class="right">Create User</button>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #eee;margin:12px 0;" />
+
+            <div class="muted">Existing users</div>
+            <div id="usersList" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
