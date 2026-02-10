@@ -1,14 +1,16 @@
 {
   "name": "po_tracking",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.2.0",
     "express": "^4.19.2",
+    "express-session": "^1.19.0",
     "multer": "^1.4.5-lts.1"
   }
 }
